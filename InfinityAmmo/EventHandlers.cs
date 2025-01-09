@@ -1,6 +1,7 @@
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs.Player;
+using System;
 using Firearm = Exiled.API.Features.Items.Firearm;
 
 namespace InfinityAmmo
@@ -9,19 +10,54 @@ namespace InfinityAmmo
     {
         public void OnReloadingWeapon(ReloadingWeaponEventArgs ev)
         {
-            if (Plugin.Instance.Config.Debug)
-                Log.Debug($"[InfinityAmmo] Player {ev.Player.Nickname} is reloading.");
+            Log.Debug("Reloading!");
+            ev.Player.SetAmmo(ev.Firearm.AmmoType, (ushort)(ev.Firearm.TotalMaxAmmo + 1));
+        }
 
-            // Устанавливаем фиксированное количество боеприпасов
-            ev.Player.SetAmmo(ev.Firearm.AmmoType, (ushort)Plugin.Instance.Config.FixedAmmoAmount);
+        public void OnShot(ShotEventArgs ev)
+        {
+            if (ev.Firearm.Type != ItemType.ParticleDisruptor)
+            {
+                ev.Player.SetAmmo(ev.Firearm.AmmoType, 1);
+                return;
+            }
+
+            Log.Debug("Disruptor Shot!");
+
+            if (!Plugin.Instance.Config.InfParticleDisruptor)
+                return;
+
+            Log.Debug("Reloading Disruptor!");
+            ev.Firearm.AmmoDrain = 5;
+            ev.Firearm.BarrelAmmo = 5;
+            ev.Firearm.MagazineAmmo = 5;
+        }
+
+        public void OnChangingItem(ChangingItemEventArgs ev)
+        {
+            Log.Debug("Changing!");
+            if (ev.Item is not Firearm firearm)
+                return;
+
+            Log.Debug("Firearm!");
+
+            if (firearm.Type == ItemType.ParticleDisruptor)
+            {
+                Log.Debug("Disruptor!");
+                firearm.AmmoDrain = 5;
+                firearm.BarrelAmmo = 5;
+                firearm.MagazineAmmo = 5;
+            }
+
+            Log.Debug("Setting ammo!");
+            ev.Player.SetAmmo(firearm.AmmoType, 1);
         }
 
         public void OnPickingUpItem(Exiled.Events.EventArgs.Player.PickingUpItemEventArgs ev)
         {
-            // Проверяем, является ли подбираемый предмет боеприпасами
             if (ev.Pickup.Type is ItemType.Ammo12gauge or ItemType.Ammo44cal or ItemType.Ammo556x45 or ItemType.Ammo762x39 or ItemType.Ammo9x19)
             {
-                ev.IsAllowed = false; // Блокируем возможность поднять боеприпасы
+                ev.IsAllowed = false;
 
                 if (Plugin.Instance.Config.Debug)
                     Log.Debug($"[InfinityAmmo] Player {ev.Player.Nickname} attempted to pick up ammo ({ev.Pickup.Type}) and was blocked.");
@@ -30,56 +66,21 @@ namespace InfinityAmmo
 
         public void OnDroppingAmmo(Exiled.Events.EventArgs.Player.DroppingAmmoEventArgs ev)
         {
-            ev.IsAllowed = false; // Блокируем возможность выбросить боеприпасы
+            ev.IsAllowed = false;
 
             if (Plugin.Instance.Config.Debug)
                 Log.Debug($"[InfinityAmmo] Player {ev.Player.Nickname} attempted to drop ammo ({ev.AmmoType}) and was blocked.");
         }
 
-
-        public void OnShot(ShotEventArgs ev)
-        {
-            if (ev.Firearm.Type != ItemType.ParticleDisruptor)
-            {
-                ev.Player.SetAmmo(ev.Firearm.AmmoType, (ushort)Plugin.Instance.Config.FixedAmmoAmount);
-                return;
-            }
-
-            if (Plugin.Instance.Config.Debug)
-                Log.Debug($"[InfinityAmmo] Player {ev.Player.Nickname} fired a Particle Disruptor.");
-
-            if (!Plugin.Instance.Config.InfParticleDisruptor)
-                return;
-
-            ev.Firearm.AmmoDrain = 5;
-            ev.Firearm.BarrelAmmo = 5;
-            ev.Firearm.MagazineAmmo = 5;
-        }
-
-        public void OnChangingItem(ChangingItemEventArgs ev)
-        {
-            if (Plugin.Instance.Config.Debug)
-                Log.Debug($"[InfinityAmmo] Player {ev.Player.Nickname} is changing items.");
-
-            if (ev.Item is not Firearm firearm)
-                return;
-
-            if (firearm.Type == ItemType.ParticleDisruptor)
-            {
-                firearm.AmmoDrain = 5;
-                firearm.BarrelAmmo = 5;
-                firearm.MagazineAmmo = 5;
-            }
-
-            ev.Player.SetAmmo(firearm.AmmoType, (ushort)Plugin.Instance.Config.FixedAmmoAmount);
-        }
-
         public void OnDying(DyingEventArgs ev)
         {
-            if (Plugin.Instance.Config.Debug)
-                Log.Debug($"[InfinityAmmo] Player {ev.Player.Nickname} has died. Clearing ammo.");
-
-            ev.Player.Ammo.Clear();
+            Log.Debug("Dying!");
+            ev.Player.SetAmmo(AmmoType.Nato9, 0);
+            ev.Player.SetAmmo(AmmoType.Ammo44Cal, 0);
+            ev.Player.SetAmmo(AmmoType.Ammo12Gauge, 0);
+            ev.Player.SetAmmo(AmmoType.Nato556, 0);
+            ev.Player.SetAmmo(AmmoType.Nato762, 0);
+            ev.Player.SetAmmo(AmmoType.None, 0);
         }
 
         public void OnRoundStarted()
@@ -98,3 +99,4 @@ namespace InfinityAmmo
         }
     }
 }
+
