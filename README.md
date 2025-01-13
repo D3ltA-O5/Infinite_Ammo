@@ -1,3 +1,4 @@
+Made on basis of this plugin [InfinityAmmo]((https://github.com/alexomur/InfinityAmmo)) i made little upgrades for them for ammo clearence and ban on throwing away cartridges from inventory
 # 🔫 Infinite_Ammo Plugin for SCP: Secret Laboratory
 
 The **Infinite_Ammo Plugin** provides advanced ammo management for SCP: Secret Laboratory. This plugin ensures a balanced and controlled gameplay experience by managing ammo capacities, reloading behavior, and restricting certain actions like dropping or picking up ammo.
