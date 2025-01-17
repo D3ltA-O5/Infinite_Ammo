@@ -1,10 +1,9 @@
 ﻿using System;
-using Exiled.API.Enums;
 using Exiled.API.Features;
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
-using Exiled.Events.EventArgs.Player;
-using Firearm = Exiled.API.Features.Items.Firearm;
+using player = Exiled.Events.Handlers.Player;
+using scp914 = Exiled.Events.Handlers.Scp914;
 
 namespace InfinityAmmo
 {
@@ -52,6 +51,11 @@ namespace InfinityAmmo
             Player.PickingUpItem += _handlers.OnPickingUpItem;
             Player.DroppingAmmo += _handlers.OnDroppingAmmo;
             Server.RoundStarted += _handlers.OnRoundStarted;
+            scp914.UpgradingPlayer += _handlers.OnUpgradingPlayer;
+            scp914.UpgradingPickup += _handlers.OnUpgradingItem;
+
+
+
         }
 
         private void UnregisterEvents()
@@ -63,6 +67,9 @@ namespace InfinityAmmo
             Player.PickingUpItem -= _handlers.OnPickingUpItem;
             Player.DroppingAmmo -= _handlers.OnDroppingAmmo;
             Server.RoundStarted -= _handlers.OnRoundStarted;
+            scp914.UpgradingPlayer -= _handlers.OnUpgradingPlayer;
+            scp914.UpgradingPickup -= _handlers.OnUpgradingItem;
+
 
             _handlers = null;
         }

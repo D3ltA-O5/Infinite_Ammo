@@ -1,7 +1,12 @@
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using Exiled.CustomItems.API.EventArgs;
 using Exiled.Events.EventArgs.Player;
+using Exiled.Events.EventArgs.Scp914;
+using MEC;
 using System;
+using System.Linq;
+using UnityEngine;
 using Firearm = Exiled.API.Features.Items.Firearm;
 
 namespace InfinityAmmo
@@ -10,8 +15,11 @@ namespace InfinityAmmo
     {
         public void OnReloadingWeapon(ReloadingWeaponEventArgs ev)
         {
-            Log.Debug("Reloading!");
-            ev.Player.SetAmmo(ev.Firearm.AmmoType, (ushort)(ev.Firearm.TotalMaxAmmo + 1));
+            if (ev.Firearm.Type != ItemType.GunShotgun)
+            {
+                Log.Debug("Reloading!");
+                ev.Player.SetAmmo(ev.Firearm.AmmoType, (ushort)(ev.Firearm.TotalMaxAmmo + 1));
+            } 
         }
 
         public void OnShot(ShotEventArgs ev)
@@ -64,6 +72,7 @@ namespace InfinityAmmo
             }
         }
 
+
         public void OnDroppingAmmo(Exiled.Events.EventArgs.Player.DroppingAmmoEventArgs ev)
         {
             ev.IsAllowed = false;
@@ -97,6 +106,38 @@ namespace InfinityAmmo
             if (Plugin.Instance.Config.Debug)
                 Log.Debug("[InfinityAmmo] All ammo pickups destroyed at the start of the round.");
         }
+        public void OnUpgradingPlayer(UpgradingPlayerEventArgs ev)
+        {
+            // Очищаем карту от всех патронов, если это включено в конфигурации
+            if (Plugin.Instance.Config.DestroyAmmoPickups)
+            {
+                foreach (var pickup in Exiled.API.Features.Pickups.Pickup.List)
+                {
+                    if (pickup is Exiled.API.Features.Pickups.AmmoPickup)
+                        pickup.Destroy();
+                }
+
+                if (Plugin.Instance.Config.Debug)
+                    Log.Debug("[InfinityAmmo] All ammo pickups destroyed during player upgrade.");
+            }
+
+        }
+
+        public void OnUpgradingItem(UpgradingPickupEventArgs ev)
+        {
+            // Очищаем карту от всех патронов, если это включено в конфигурации
+            if (Plugin.Instance.Config.DestroyAmmoPickups)
+            {
+                foreach (var pickup in Exiled.API.Features.Pickups.Pickup.List)
+                {
+                    if (pickup is Exiled.API.Features.Pickups.AmmoPickup)
+                        pickup.Destroy();
+                }
+
+                if (Plugin.Instance.Config.Debug)
+                    Log.Debug("[InfinityAmmo] All ammo pickups destroyed during player upgrade.");
+            }
+        }
+
     }
 }
-
